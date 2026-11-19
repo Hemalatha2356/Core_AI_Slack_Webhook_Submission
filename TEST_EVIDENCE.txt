@@ -1,0 +1,27 @@
+Core AI Services India - Local Test Evidence
+Verification date: 19 November 2026
+Environment: isolated local test run; listener port 45100; receiver port 45101.
+No live Slack workspace was used.
+
+Automated test suite:
+Command: npm test
+Result: 13 tests passed; 0 failed.
+
+Local integration checks:
+Listener health: HTTP 200
+Receiver health: HTTP 200
+Successful transaction: HTTP 200 | delivered=true
+Receiver messages: HTTP 200 | one message received; customer email not present in mapped payload
+Null email success: HTTP 200 | delivered=true
+Failed transaction: HTTP 200 | ignored=true
+Malformed JSON: HTTP 400 | {"error":"malformed_json"}
+Missing transaction id: HTTP 422 | {"error":"validation_failed","details":["transaction_id_required"]}
+Wrong amount type: HTTP 422 | {"error":"validation_failed","details":["amount_minor_must_be_nonnegative_integer"]}
+
+End-to-end downstream timeout:
+Receiver timeout endpoint delays its response by 5 seconds.
+Listener timeout configured to 500 ms for this isolated verification.
+Successful transaction sent through listener while destination pointed to /services/core-ai/timeout.
+Result: HTTP 504 | {"error":"downstream_timeout"}
+
+Configuration was restored/removed after the isolated verification. These are local receiver results, not proof of delivery to a live Slack workspace.
