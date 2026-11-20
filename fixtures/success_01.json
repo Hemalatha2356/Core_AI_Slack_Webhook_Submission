@@ -1,0 +1,13 @@
+{
+  "event_id": "evt_CA001",
+  "event_type": "transaction.succeeded",
+  "occurred_at": "2026-11-18T07:30:00Z",
+  "transaction": {
+    "id": "txn_CA001",
+    "status": "succeeded",
+    "amount_minor": 259900,
+    "currency": "INR",
+    "customer_email": "contact01@example.test",
+    "reference": "ORDER-1001"
+  }
+}

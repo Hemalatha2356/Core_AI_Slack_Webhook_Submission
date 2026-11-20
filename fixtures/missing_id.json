@@ -1,0 +1,13 @@
+{
+  "event_id": "evt_CA004",
+  "event_type": "transaction.succeeded",
+  "occurred_at": "2026-11-18T07:45:00Z",
+  "transaction": {
+    "id": "",
+    "status": "succeeded",
+    "amount_minor": 190000,
+    "currency": "INR",
+    "customer_email": "contact04@example.test",
+    "reference": "ORDER-1004"
+  }
+}

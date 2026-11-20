@@ -1,0 +1,13 @@
+{
+  "event_id": "evt_CA003",
+  "event_type": "transaction.failed",
+  "occurred_at": "2026-11-18T07:40:00Z",
+  "transaction": {
+    "id": "txn_CA003",
+    "status": "failed",
+    "amount_minor": 149900,
+    "currency": "INR",
+    "customer_email": "contact03@example.test",
+    "reference": "ORDER-1003"
+  }
+}

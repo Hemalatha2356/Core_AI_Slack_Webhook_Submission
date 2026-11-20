@@ -1,0 +1,230 @@
+{
+  "info": {
+    "name": "Core AI Transaction-to-Slack Webhook",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Local integration test collection. For listener timeout testing, follow README_SETUP.md: point SLACK_WEBHOOK_URL at the receiver /timeout endpoint, lower FORWARD_TIMEOUT_MS, restart listener, then run Success event and expect HTTP 504."
+  },
+  "variable": [
+    {
+      "key": "listenerUrl",
+      "value": "http://127.0.0.1:4100"
+    },
+    {
+      "key": "receiverUrl",
+      "value": "http://127.0.0.1:4101"
+    }
+  ],
+  "item": [
+    {
+      "name": "Success event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"event_id\": \"evt_CA001\", \"event_type\": \"transaction.succeeded\", \"occurred_at\": \"2026-11-18T07:30:00Z\", \"transaction\": {\"id\": \"txn_CA001\", \"status\": \"succeeded\", \"amount_minor\": 259900, \"currency\": \"INR\", \"customer_email\": \"contact01@example.test\", \"reference\": \"ORDER-1001\"}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{listenerUrl}}/webhooks/transactions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 delivered', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().delivered).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Null email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"event_id\": \"evt_CA002\", \"event_type\": \"transaction.succeeded\", \"occurred_at\": \"2026-11-18T07:35:00Z\", \"transaction\": {\"id\": \"txn_CA002\", \"status\": \"succeeded\", \"amount_minor\": 4999, \"currency\": \"USD\", \"customer_email\": null, \"reference\": null}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{listenerUrl}}/webhooks/transactions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 delivered', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().delivered).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Malformed JSON",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"bad\":",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{listenerUrl}}/webhooks/transactions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400 malformed JSON', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invalid data",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"event_id\": \"evt_CA005\", \"event_type\": \"transaction.succeeded\", \"occurred_at\": \"2026-11-18T07:50:00Z\", \"transaction\": {\"id\": \"txn_CA005\", \"status\": \"succeeded\", \"amount_minor\": \"2000\", \"currency\": \"INR\", \"customer_email\": null, \"reference\": null}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{listenerUrl}}/webhooks/transactions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422 validation failure', function () { pm.response.to.have.status(422); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Non-success event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"event_id\": \"evt_CA003\", \"event_type\": \"transaction.failed\", \"occurred_at\": \"2026-11-18T07:40:00Z\", \"transaction\": {\"id\": \"txn_CA003\", \"status\": \"failed\", \"amount_minor\": 149900, \"currency\": \"INR\", \"customer_email\": \"contact03@example.test\", \"reference\": \"ORDER-1003\"}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{listenerUrl}}/webhooks/transactions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 ignored', function () { pm.response.to.have.status(200); pm.expect(pm.response.json().ignored).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receiver messages",
+      "request": {
+        "method": "GET",
+        "url": "{{receiverUrl}}/messages"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 receiver response', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Receiver timeout endpoint",
+      "request": {
+        "method": "POST",
+        "url": "{{receiverUrl}}/services/core-ai/timeout",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\":\"timeout probe\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Receiver timeout probe endpoint responds', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
